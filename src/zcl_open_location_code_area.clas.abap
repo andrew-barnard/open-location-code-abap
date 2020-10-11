@@ -25,7 +25,7 @@ CLASS zcl_open_location_code_area DEFINITION
       RETURNING
         VALUE(result) TYPE REF TO zcl_open_location_code_area.
 
-        "! Get south 
+        "! Get south
     METHODS get_south RETURNING VALUE(result) TYPE decfloat34.
       "! Get west
     METHODS get_west RETURNING VALUE(result) TYPE decfloat34.
@@ -67,7 +67,33 @@ CLASS zcl_open_location_code_area DEFINITION
   PRIVATE SECTION.
 ENDCLASS.
 
-CLASS zcl_open_location_code_area IMPLEMENTATION.
+
+
+CLASS ZCL_OPEN_LOCATION_CODE_AREA IMPLEMENTATION.
+
+
+  METHOD center_lat_add.
+    center-lat = center-lat + precision.
+    result = center-lat.
+  ENDMETHOD.
+
+
+  METHOD center_lat_minus.
+    center-lat = center-lat - precision .
+    result = center-lat.
+  ENDMETHOD.
+
+
+  METHOD center_lng_add.
+    center-lng = center-lng + precision .
+    result = center-lng.
+  ENDMETHOD.
+
+
+  METHOD center_lng_minus.
+    center-lng = center-lng - precision .
+    result = center-lng.
+  ENDMETHOD.
 
 
   METHOD create.
@@ -97,56 +123,43 @@ CLASS zcl_open_location_code_area IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD get_south.
-    result = me->south.
-  ENDMETHOD.
-
-  METHOD get_west.
-    result = me->west.
-  ENDMETHOD.
-
-  METHOD get_north.
-    result = me->north.
-  ENDMETHOD.
-
-  METHOD get_east.
-    result = me->east.
-  ENDMETHOD.
 
   METHOD get_center.
     result = me->center.
   ENDMETHOD.
 
+
   METHOD get_center_lat.
     result = me->center-lat.
   ENDMETHOD.
 
-  METHOD center_lat_add.
-    center-lat = center-lat + precision.
-    result = center-lat.
-  ENDMETHOD.
-
-  METHOD center_lat_minus.
-    center-lat = center-lat - precision .
-    result = center-lat.
-  ENDMETHOD.
-
-  METHOD center_lng_add.
-    center-lng = center-lng + precision .
-    result = center-lng.
-  ENDMETHOD.
-  
-  METHOD center_lng_minus.
-    center-lng = center-lng - precision .
-    result = center-lng.
-  ENDMETHOD.
 
   METHOD get_center_lng.
     result = me->center-lng.
   ENDMETHOD.
 
+
   METHOD get_code_length.
     result = me->code_length.
   ENDMETHOD.
 
+
+  METHOD get_east.
+    result = me->east.
+  ENDMETHOD.
+
+
+  METHOD get_north.
+    result = me->north.
+  ENDMETHOD.
+
+
+  METHOD get_south.
+    result = me->south.
+  ENDMETHOD.
+
+
+  METHOD get_west.
+    result = me->west.
+  ENDMETHOD.
 ENDCLASS.

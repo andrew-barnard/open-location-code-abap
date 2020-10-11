@@ -202,7 +202,9 @@ CLASS zcl_open_location_code DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_open_location_code IMPLEMENTATION.
+
+CLASS ZCL_OPEN_LOCATION_CODE IMPLEMENTATION.
+
 
   METHOD class_constructor.
 
@@ -247,7 +249,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
   METHOD code_value.
 
-    
+
     READ TABLE alphabet_codes INTO DATA(alphabet_code) WITH KEY char = code .
     IF sy-subrc <> 0.
       ASSERT 0 = 1 .
@@ -311,7 +313,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
       "// If code is too long, truncate it
       IF numchars >  max_code_length.
         code = substring( val = code
-                          off = 0 
+                          off = 0
                           len =  max_code_length ) .
         "// Length of remaining code?
         numchars = numofchar( code ) .
@@ -319,21 +321,21 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
       "// Work out the values as integers and convert to floating point at the end.
 
-      
+
       DATA(lat) = -90 *  lat_integer_multiplier  .
       DATA(lng) = -180 *  lng_integer_multiplier .
 
-      
+
       DATA(lat_place_value) =  lat_integer_multiplier * ipow( base =  encoding_base
                                                         exp = 2 ) .
       DATA(lng_place_value) =  lng_integer_multiplier * ipow( base =  encoding_base
                                                         exp = 2 ) .
-
+      DATA chr TYPE c.
       DO numchars TIMES.
 
         DATA(idx) = ( sy-index - 1 ) .
 
-        DATA(chr) = code+idx(1) .
+        chr = code+idx(1) .
 
         IF idx <  pair_code_length .
 
@@ -349,7 +351,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
           lat_place_value = lat_place_value /  grid_rows    .
           lng_place_value = lng_place_value /  grid_columns .
-          
+
           DATA(intermediate) = ( code_value( chr ) DIV  grid_columns ).
           lat = lat + lat_place_value * ( code_value( chr ) DIV  grid_columns ) .
           lng = lng + lng_place_value * ( code_value( chr ) MOD  grid_columns ) .
@@ -359,34 +361,40 @@ CLASS zcl_open_location_code IMPLEMENTATION.
       ENDDO.
 
       " Convert to floating point values
-      
+
       " Integer to float
-      DATA(lat_lo) = lat .
+      DATA lat_lo TYPE decfloat34.
+      lat_lo = lat .
+
       " Float math
       lat_lo = ( lat_lo ) /  lat_integer_multiplier .
 
-      
+
       " Integer to float
-      DATA(lng_lo) = lng .
+      DATA lng_lo TYPE decfloat34.
+      lng_lo = lng .
       " Float math
       lng_lo = ( lng_lo ) /  lng_integer_multiplier .
 
-      
+
       " Integer to float
-      DATA(lat_hi) = lat.
+      DATA lat_hi TYPE decfloat34.
+      lat_hi = lat.
+
       " Float addition
       lat_hi = lat_hi + lat_place_value .
       lat_hi = lat_hi / ( ( ipow( base =  encoding_base
-                                  exp = 3 ) * ipow( base =  grid_rows 
+                                  exp = 3 ) * ipow( base =  grid_rows
                                                                           exp = 5 ) ) )  .
 
-      
+
       " Integer to float
-      DATA(lng_hi) = lng.
+      DATA lng_hi TYPE decfloat34.
+      lng_hi = lng.
       " Float addition
       lng_hi = lng_hi + lng_place_value .
       lng_hi = lng_hi  / ( ( ipow( base =  encoding_base
-                                   exp = 3 ) * ipow( base =  grid_columns 
+                                   exp = 3 ) * ipow( base =  grid_columns
                                                                            exp = 5 ) ) ) .
 
       "// We always pass in the maximum resolution and expect the code area to truncate based upon code_length
@@ -519,14 +527,17 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
 
 * Compute the code.
-    
-    
+
+    DATA lat_val TYPE int8.
+    DATA lng_val TYPE int8.
+
     "// Convert to integers.
-    DATA(lat_val) = floor( round( val = ( ( lat +  latitude_max ) *  lat_integer_multiplier )
-                            dec = 8 
+    lat_val = floor( round( val = ( ( lat +  latitude_max ) *  lat_integer_multiplier )
+                            dec = 8
                             mode = cl_abap_math=>round_half_up ) ) .
-    DATA(lng_val) = floor( round( val = ( ( lng +  longitude_max ) *  lng_integer_multiplier )
-                            dec = 8 
+
+    lng_val = floor( round( val = ( ( lng +  longitude_max ) *  lng_integer_multiplier )
+                            dec = 8
                             mode = cl_abap_math=>round_half_up ) ) .
 
 *  Compute the code
@@ -534,17 +545,25 @@ CLASS zcl_open_location_code IMPLEMENTATION.
     "//  generates either a 10 digit code, or a 15 digit code, and then truncates
     "// it to the requested length.
 
-    
+
     "// Compute the grid part of the code if necessary
     " JS around 351
+
+    DATA rev_code TYPE string.
+    DATA lat_digit TYPE int8.
+    DATA lng_digit TYPE int8.
+    DATA ndx TYPE i.
+    DATA this_code TYPE c LENGTH 1.
+    DATA i TYPE i.
+
     IF trimmed_code_length >  pair_code_length .
-      DATA(i) = 0.
+      i = 0.
       WHILE i <  grid_code_length.
-        DATA(lat_digit) = lat_val MOD  grid_rows.
-        DATA(lng_digit) = lng_val MOD  grid_columns.
-        DATA(ndx) = ( lat_digit *  grid_columns + lng_digit ) .
-        DATA(this_code) =  code_alphabet+ndx(1).
-        DATA(rev_code) = rev_code && this_code.
+        lat_digit = lat_val MOD  grid_rows.
+        lng_digit = lng_val MOD  grid_columns.
+        ndx = ( lat_digit *  grid_columns + lng_digit ) .
+        this_code =  code_alphabet+ndx(1).
+        rev_code = rev_code && this_code.
         lat_val = floor( ( lat_val * '1.00000000000' ) /  grid_rows    ).
         lng_val = floor( ( lng_val * '1.00000000000' ) /  grid_columns ).
         i = i + 1.
@@ -581,7 +600,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
     IF trimmed_code_length <  separator_position.
 
       rev_code  = substring( val = rev_code
-                             off = 0 
+                             off = 0
                              len = trimmed_code_length ).
 
       DO (  separator_position - trimmed_code_length ) TIMES.
@@ -592,7 +611,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
     ELSE.
       result  = substring( val = rev_code
-                           off = 0 
+                           off = 0
                            len = trimmed_code_length + 1 ).
     ENDIF.
 
@@ -716,7 +735,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
       ENDIF.
 
       DATA(segment) = substring( val = code
-                                 off = padposition 
+                                 off = padposition
                                  len = paddingchars ).
       IF segment CO  padding_char .
         " As expected
@@ -772,8 +791,8 @@ CLASS zcl_open_location_code IMPLEMENTATION.
     paddinglength =  separator_position - paddinglength.
 
     " // The resolution (height and width) of the padded area in degrees.
-    
-    DATA(resolution) = 20 ** ( 2 - ( paddinglength / 2 ) ) .
+    DATA resolution TYPE decfloat34.
+    resolution = 20 ** ( 2 - ( paddinglength / 2 ) ) .
 
     "// Distance from the center to an edge (in degrees).
     DATA(halfresolution) = resolution / '2.0' .
@@ -784,7 +803,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
 
     DATA(encoderef) = encode( refpoint ).
     encoderef  = substring( val = encoderef
-                            off = 0 
+                            off = 0
                             len = paddinglength ).
     encoderef = encoderef && shortcode .
 
@@ -843,24 +862,26 @@ CLASS zcl_open_location_code IMPLEMENTATION.
     ENDIF.
 
     "// Can't shorten a too small code length
-    
+    DATA codearearesult TYPE REF TO zcl_open_location_code_area.
 
-    DATA(codearearesult) ?= decode( code ) .
+    codearearesult ?= decode( code ) .
 
+    DATA latitude TYPE decfloat34.
+    DATA longitude TYPE decfloat34.
 
-    DATA(latitude) = clip_latitude( ref_pt-lat ) .
-    DATA(longitude) = normalize_longitude( ref_pt-lng ) .
+    latitude  = clip_latitude( ref_pt-lat ) .
+    longitude = normalize_longitude( ref_pt-lng ) .
 
     "// How close are the latitude and longitude to the code center?
-    
-    DATA(range) = nmax( val1 = abs( codearearesult->get_center_lat( ) - latitude )
+    DATA range TYPE decfloat34.
+    range = nmax( val1 = abs( codearearesult->get_center_lat( ) - latitude )
                   val2 = abs( codearearesult->get_center_lng( ) - longitude ) ).
 
-    "//
-    
-    
+
+
+
     DATA(length) = numofchar( code ) .
-    
+
     DATA(i) = lines(  resolution_values ) - 2 .
     WHILE i >= 1.
 
@@ -875,7 +896,7 @@ CLASS zcl_open_location_code IMPLEMENTATION.
         DATA(offset) = ( idx ) * 2 .
         length = length - offset .
         result = substring( val = code
-                            off = offset 
+                            off = offset
                             len = length ) .
         RETURN.
       ENDIF.

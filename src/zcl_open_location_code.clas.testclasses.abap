@@ -1,3 +1,4 @@
+*"* use this source file for your ABAP unit test classes
 INTERFACE if_test_cases.
 
   TYPES:
@@ -197,7 +198,7 @@ CLASS test_cases_validity IMPLEMENTATION.
               is_valid = abap_false
               is_short = abap_false
               is_full = abap_false ) .
-    load( code = '8FWC2ÃŽÂ·45+G6'
+    load( code = '8FWC2ÃƒÅ½Ã‚Â·45+G6'
               is_valid = abap_false
               is_short = abap_false
               is_full = abap_false ) .
@@ -848,7 +849,7 @@ CLASS test_cases_encoding IMPLEMENTATION.
               expected = '6FH56C22+22' ).
 
   ENDMETHOD.
-  
+
   METHOD load_long_codes.
     "  Validate that codes generated with a length exceeding 15 significant digits'
     "  return a 15-digit code'
@@ -865,7 +866,7 @@ CLASS test_cases_encoding IMPLEMENTATION.
               length = '100'
               expected = '849VGJQF+VX7QR3J' ).
   ENDMETHOD.
-  
+
   METHOD load.
 
     FIELD-SYMBOLS <record> LIKE LINE OF test_records.

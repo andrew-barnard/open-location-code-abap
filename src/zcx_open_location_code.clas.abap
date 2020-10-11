@@ -1,28 +1,36 @@
-CLASS zcx_open_location_code DEFINITION
-  PUBLIC
-  INHERITING FROM cx_dynamic_check
-  CREATE PUBLIC .
+class ZCX_OPEN_LOCATION_CODE definition
+  public
+  inheriting from CX_DYNAMIC_CHECK
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    "! <p class="shorttext synchronized" lang="en">CONSTRUCTOR</p>
-    METHODS constructor
-      IMPORTING
-        !textid   LIKE textid OPTIONAL
-        !previous LIKE previous OPTIONAL .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+  interfaces IF_T100_DYN_MSG .
+  interfaces IF_T100_MESSAGE .
+
+  methods CONSTRUCTOR
+    importing
+      !TEXTID like IF_T100_MESSAGE=>T100KEY optional
+      !PREVIOUS like PREVIOUS optional .
+protected section.
+private section.
 ENDCLASS.
 
 
 
-CLASS zcx_open_location_code IMPLEMENTATION.
+CLASS ZCX_OPEN_LOCATION_CODE IMPLEMENTATION.
 
 
-  METHOD constructor ##ADT_SUPPRESS_GENERATION.
-    CALL METHOD super->constructor
-      EXPORTING
-        textid   = textid
-        previous = previous.
-  ENDMETHOD.
+  method CONSTRUCTOR.
+CALL METHOD SUPER->CONSTRUCTOR
+EXPORTING
+PREVIOUS = PREVIOUS
+.
+clear me->textid.
+if textid is initial.
+  IF_T100_MESSAGE~T100KEY = IF_T100_MESSAGE=>DEFAULT_TEXTID.
+else.
+  IF_T100_MESSAGE~T100KEY = TEXTID.
+endif.
+  endmethod.
 ENDCLASS.
